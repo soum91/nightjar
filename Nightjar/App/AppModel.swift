@@ -96,7 +96,7 @@ final class AppModel: ObservableObject {
 
     // MARK: Background refresh (keeps the widget fresh)
 
-    static let bgID = "com.soum91.nightjar.refresh"
+    nonisolated static let bgID = "com.soum91.nightjar.refresh"
 
     nonisolated static func registerBackground() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: bgID, using: nil) { task in
