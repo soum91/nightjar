@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.0.0.2",
+          "buildVersion": "2",
+          "date": "2026-10-21T17:23:34Z",
+          "localizedDescription": "- Fix Swift 6 actor warning on background task ID (d260ab4)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-2/Nightjar-1.0.0-build-2.ipa",
+          "size": 605911,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.0.0.1",
           "buildVersion": "1",
           "date": "2026-10-21T17:18:20Z",
@@ -29,11 +38,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.0.0.1",
-      "versionDate": "2026-10-21T17:18:20Z",
-      "versionDescription": "- Nightjar v1: cameras, event timeline, clip playback, widget (5da3de6)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-1/Nightjar-1.0.0-build-1.ipa",
-      "size": 605897,
+      "version": "1.0.0.2",
+      "versionDate": "2026-10-21T17:23:34Z",
+      "versionDescription": "- Fix Swift 6 actor warning on background task ID (d260ab4)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-2/Nightjar-1.0.0-build-2.ipa",
+      "size": 605911,
       "appPermissions": {}
     }
   ],
