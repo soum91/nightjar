@@ -1,0 +1,34 @@
+import SwiftUI
+
+@main
+struct NightjarApp: App {
+    @StateObject private var model = AppModel()
+    @Environment(\.scenePhase) private var phase
+
+    init() { AppModel.registerBackground() }
+
+    var body: some Scene {
+        WindowGroup {
+            RootView()
+                .environmentObject(model)
+                .preferredColorScheme(.dark)
+                .tint(Theme.accent)
+                .onOpenURL { _ in Task { await model.refresh() } }
+        }
+        .onChange(of: phase) { _, new in
+            if new == .active { Task { await model.refresh() } }
+            if new == .background { AppModel.scheduleBackground() }
+        }
+    }
+}
+
+struct RootView: View {
+    @EnvironmentObject var model: AppModel
+    var body: some View {
+        if model.signedIn {
+            HomeView()
+        } else {
+            LoginView()
+        }
+    }
+}

@@ -1,0 +1,73 @@
+name: Nightjar
+options:
+  bundleIdPrefix: com.soum91
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGN_IDENTITY: ""
+targets:
+  Nightjar:
+    type: application
+    platform: iOS
+    sources:
+      - path: Nightjar
+      - path: Shared
+    dependencies:
+      - target: NightjarWidget
+    info:
+      path: Nightjar/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDisplayName: Nightjar
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        ITSAppUsesNonExemptEncryption: false
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [com.soum91.nightjar.refresh]
+        NSPhotoLibraryAddUsageDescription: Nightjar saves clips and snapshots from your cameras to Photos.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.soum91.nightjar
+            CFBundleURLSchemes: [nightjar]
+    entitlements:
+      path: Nightjar/Nightjar.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.soum91.nightjar]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.soum91.nightjar
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO
+  NightjarWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: NightjarWidget
+      - path: Shared
+    info:
+      path: NightjarWidget/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDisplayName: Nightjar
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: NightjarWidget/NightjarWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.soum91.nightjar]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.soum91.nightjar.widget
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES

@@ -1,0 +1,13 @@
+{
+  "name": "Nightjar",
+  "sourceName": "Nightjar by soum91",
+  "sourceIdentifier": "io.github.soum91.nightjar",
+  "subtitle": "Your Vicohome cameras, no clutter",
+  "description": "A clean iOS client for Vicohome cameras: camera health, a motion event timeline, cloud clip playback and a home screen widget. Live view is coming.",
+  "developerName": "soum91",
+  "iconURL": "https://raw.githubusercontent.com/soum91/nightjar/main/Nightjar/Assets.xcassets/AppIcon.appiconset/icon.png",
+  "tintColor": "E8A33D",
+  "category": "utilities",
+  "website": "https://github.com/soum91/nightjar",
+  "sourceURL": "https://raw.githubusercontent.com/soum91/nightjar/source/source.json"
+}
