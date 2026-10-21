@@ -1,0 +1,41 @@
+{
+  "name": "Nightjar by soum91",
+  "identifier": "io.github.soum91.nightjar",
+  "subtitle": "Your Vicohome cameras, no clutter",
+  "description": "A clean iOS client for Vicohome cameras: camera health, a motion event timeline, cloud clip playback and a home screen widget. Live view is coming.",
+  "iconURL": "https://raw.githubusercontent.com/soum91/nightjar/main/Nightjar/Assets.xcassets/AppIcon.appiconset/icon.png",
+  "website": "https://github.com/soum91/nightjar",
+  "sourceURL": "https://raw.githubusercontent.com/soum91/nightjar/source/source.json",
+  "tintColor": "E8A33D",
+  "apps": [
+    {
+      "name": "Nightjar",
+      "bundleIdentifier": "com.soum91.nightjar",
+      "developerName": "soum91",
+      "subtitle": "Your Vicohome cameras, no clutter",
+      "localizedDescription": "A clean iOS client for Vicohome cameras: camera health, a motion event timeline, cloud clip playback and a home screen widget. Live view is coming.",
+      "iconURL": "https://raw.githubusercontent.com/soum91/nightjar/main/Nightjar/Assets.xcassets/AppIcon.appiconset/icon.png",
+      "tintColor": "E8A33D",
+      "category": "utilities",
+      "screenshotURLs": [],
+      "versions": [
+        {
+          "version": "1.0.0.1",
+          "buildVersion": "1",
+          "date": "2026-10-21T17:18:20Z",
+          "localizedDescription": "- Nightjar v1: cameras, event timeline, clip playback, widget (5da3de6)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-1/Nightjar-1.0.0-build-1.ipa",
+          "size": 605897,
+          "minOSVersion": "18.0"
+        }
+      ],
+      "version": "1.0.0.1",
+      "versionDate": "2026-10-21T17:18:20Z",
+      "versionDescription": "- Nightjar v1: cameras, event timeline, clip playback, widget (5da3de6)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-1/Nightjar-1.0.0-build-1.ipa",
+      "size": 605897,
+      "appPermissions": {}
+    }
+  ],
+  "news": []
+}
