@@ -10,6 +10,7 @@ enum Route: Hashable {
 struct HomeView: View {
     @EnvironmentObject var model: AppModel
     @State private var path = NavigationPath()
+    @ObservedObject private var quickRoute = NightjarQuickRoute.shared
     @State private var filter: String = "All"
 
     var body: some View {
@@ -57,6 +58,12 @@ struct HomeView: View {
                 case .raw(let title, let serial, let trace): RawView(title: title, serial: serial, traceId: trace)
                 }
             }
+        }
+        .onReceive(quickRoute.$route) { route in
+            if let route { path = NavigationPath(); path.append(route); quickRoute.route = nil }
+        }
+        .onReceive(quickRoute.$showTimeline) { request in
+            if request != nil { path = NavigationPath(); filter = "All"; quickRoute.showTimeline = nil }
         }
         .task { if model.lastUpdated == nil || model.lastUpdated! < Date().addingTimeInterval(-60) { await model.refresh() } }
     }
