@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.0.0.3",
+          "buildVersion": "3",
+          "date": "2026-10-25T13:31:24Z",
+          "localizedDescription": "- Add camera-specific controls and Lock Screen status widgets (82a514b)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-3/Nightjar-1.0.0-build-3.ipa",
+          "size": 686170,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.0.0.2",
           "buildVersion": "2",
           "date": "2026-10-21T17:23:34Z",
@@ -38,11 +47,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.0.0.2",
-      "versionDate": "2026-10-21T17:23:34Z",
-      "versionDescription": "- Fix Swift 6 actor warning on background task ID (d260ab4)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-2/Nightjar-1.0.0-build-2.ipa",
-      "size": 605911,
+      "version": "1.0.0.3",
+      "versionDate": "2026-10-25T13:31:24Z",
+      "versionDescription": "- Add camera-specific controls and Lock Screen status widgets (82a514b)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-3/Nightjar-1.0.0-build-3.ipa",
+      "size": 686170,
       "appPermissions": {}
     }
   ],
