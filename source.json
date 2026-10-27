@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.0.0.6",
+          "buildVersion": "6",
+          "date": "2026-10-27T04:44:15Z",
+          "localizedDescription": "- Expose camera Shortcut for Control Center (598ad2b)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-6/Nightjar-1.0.0-build-6.ipa",
+          "size": 709398,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.0.0.5",
           "buildVersion": "5",
           "date": "2026-10-27T01:49:30Z",
@@ -65,11 +74,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.0.0.5",
-      "versionDate": "2026-10-27T01:49:30Z",
-      "versionDescription": "- Add a read-only Lock Screen status widget (faf7485)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-5/Nightjar-1.0.0-build-5.ipa",
-      "size": 704105,
+      "version": "1.0.0.6",
+      "versionDate": "2026-10-27T04:44:15Z",
+      "versionDescription": "- Expose camera Shortcut for Control Center (598ad2b)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-6/Nightjar-1.0.0-build-6.ipa",
+      "size": 709398,
       "appPermissions": {}
     }
   ],
