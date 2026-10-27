@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.0.0.4",
+          "buildVersion": "4",
+          "date": "2026-10-27T01:39:47Z",
+          "localizedDescription": "- Run Shortcuts actions in the app instead of the widget extension (348bbc3)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-4/Nightjar-1.0.0-build-4.ipa",
+          "size": 686242,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.0.0.3",
           "buildVersion": "3",
           "date": "2026-10-25T13:31:24Z",
@@ -47,11 +56,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.0.0.3",
-      "versionDate": "2026-10-25T13:31:24Z",
-      "versionDescription": "- Add camera-specific controls and Lock Screen status widgets (82a514b)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-3/Nightjar-1.0.0-build-3.ipa",
-      "size": 686170,
+      "version": "1.0.0.4",
+      "versionDate": "2026-10-27T01:39:47Z",
+      "versionDescription": "- Run Shortcuts actions in the app instead of the widget extension (348bbc3)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-4/Nightjar-1.0.0-build-4.ipa",
+      "size": 686242,
       "appPermissions": {}
     }
   ],
