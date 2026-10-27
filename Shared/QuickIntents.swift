@@ -26,6 +26,11 @@ struct CameraWidgetConfig: WidgetConfigurationIntent {
     @Parameter(title: "Action", default: .camera) var action: CameraQuickAction
 }
 struct OpenCameraIntent: AppIntent {
+    #if WIDGET_EXTENSION
+    // The widget extension cannot be launched to run intents on this iOS, so
+    // Shortcuts must only see (and run) the copy inside the app.
+    static let isDiscoverable = false
+    #endif
     static var title: LocalizedStringResource = "Open Nightjar Camera"
     static var openAppWhenRun = true
     @Parameter(title: "Camera") var camera: CameraEntity?
