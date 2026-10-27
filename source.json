@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.0.0.5",
+          "buildVersion": "5",
+          "date": "2026-10-27T01:49:30Z",
+          "localizedDescription": "- Add a read-only Lock Screen status widget (faf7485)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-5/Nightjar-1.0.0-build-5.ipa",
+          "size": 704105,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.0.0.4",
           "buildVersion": "4",
           "date": "2026-10-27T01:39:47Z",
@@ -56,11 +65,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.0.0.4",
-      "versionDate": "2026-10-27T01:39:47Z",
-      "versionDescription": "- Run Shortcuts actions in the app instead of the widget extension (348bbc3)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-4/Nightjar-1.0.0-build-4.ipa",
-      "size": 686242,
+      "version": "1.0.0.5",
+      "versionDate": "2026-10-27T01:49:30Z",
+      "versionDescription": "- Add a read-only Lock Screen status widget (faf7485)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-5/Nightjar-1.0.0-build-5.ipa",
+      "size": 704105,
       "appPermissions": {}
     }
   ],
