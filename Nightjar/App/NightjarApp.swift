@@ -1,4 +1,5 @@
 import SwiftUI
+import AppIntents
 
 @main
 struct NightjarApp: App {
@@ -30,5 +31,17 @@ struct RootView: View {
         } else {
             LoginView()
         }
+    }
+}
+
+
+/// Visible Apple Shortcuts control for opening the selected camera.
+struct NightjarShortcuts: AppShortcutsProvider {
+    static var shortcutTileColor: ShortcutTileColor = .purple
+
+    static var appShortcuts: [AppShortcut] {
+        AppShortcut(intent: OpenCameraIntent(), phrases: [
+            "Open my camera in \(.applicationName)",
+        ], shortTitle: "Open Camera", systemImageName: "video.fill")
     }
 }
