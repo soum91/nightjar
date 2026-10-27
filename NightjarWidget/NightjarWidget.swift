@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct NightjarWidgets: WidgetBundle {
     var body: some Widget {
+        NightjarLockWidget()
         CameraStatusWidget()
         if #available(iOS 18.0, *) { CameraActionControl() }
 
