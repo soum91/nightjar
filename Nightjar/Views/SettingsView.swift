@@ -36,6 +36,16 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    NavigationLink {
+                        BridgeView()
+                    } label: {
+                        Label("Apple Home bridge", systemImage: "homekit")
+                    }
+                } footer: {
+                    Text("Put the camera in Apple Home through your Keystone Bridge.")
+                }
+
+                Section {
                     Toggle("Start live view when opening a camera", isOn: $autoLive)
                 } header: {
                     Text("Live view")

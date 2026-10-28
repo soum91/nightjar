@@ -24,6 +24,10 @@ How it works (protocol from [bbielsa/vicostream](https://github.com/bbielsa/vico
 
 The live log (list button on the player, or Log after a failure) shows each step for debugging.
 
+## Apple Home (Keystone Bridge)
+
+Settings › Apple Home bridge pairs Nightjar with a Keystone Bridge (firmware 1.8+) on your Wi-Fi and sends it the camera. The bridge then shows it in Apple Home as a Motion sensor, a Person sensor and a battery, polled from Vicohome's cloud every ~20 s. It can also run "person turns lights on" itself (no home hub needed): pick the lights, an optional time window, and how long until they go off again. Live video in Apple Home isn't possible on the ESP32 (HomeSpan has no camera streaming, and the board has no PSRAM).
+
 ## Account
 
 Vicohome can kick an account offline when it logs in somewhere else, so signing in here with your main account may sign the Vicohome app out. Make a second Vicohome account, share your cameras to it from your main account, and use that in Nightjar. The password is kept in the Keychain for automatic re-login; the token sits in the App Group so the widget can refresh.

@@ -10,7 +10,7 @@ packages:
 settings:
   base:
     SWIFT_VERSION: "5.10"
-    MARKETING_VERSION: "1.1.0"
+    MARKETING_VERSION: "1.2.0"
     CURRENT_PROJECT_VERSION: "1"
     CODE_SIGNING_ALLOWED: NO
     CODE_SIGNING_REQUIRED: NO
@@ -39,6 +39,10 @@ targets:
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers: [com.soum91.nightjar.refresh]
         NSPhotoLibraryAddUsageDescription: Nightjar saves clips and snapshots from your cameras to Photos.
+        NSLocalNetworkUsageDescription: Nightjar finds your Keystone Bridge on your Wi-Fi to put the camera in Apple Home.
+        NSBonjourServices: [_afterglow._tcp]
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
         NSMicrophoneUsageDescription: Live view opens the camera's two-way audio channel. Nightjar doesn't send your voice unless you use talk.
         CFBundleURLTypes:
           - CFBundleURLName: com.soum91.nightjar

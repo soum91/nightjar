@@ -66,6 +66,7 @@ final class AppModel: ObservableObject {
             snap.save()
             await Refresher.cacheThumb(e.first)
             WidgetCenter.shared.reloadAllTimelines()
+            Task.detached { await HomeBridge.syncToken() }
         } catch {
             self.error = error.localizedDescription
             if let v = error as? VicoError, v.isAuth, Keychain.password(for: session?.email ?? "") == nil {
