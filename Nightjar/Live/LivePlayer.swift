@@ -117,6 +117,9 @@ struct LivePlayer: View {
             VStack(spacing: 10) {
                 ProgressView().tint(.white).controlSize(.large)
                 Text(session.phase.label).font(.footnote.weight(.semibold)).foregroundStyle(.white.opacity(0.85))
+                Button("Show log") { showLog = true }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.6))
             }
             closeButtonOverlay
         }

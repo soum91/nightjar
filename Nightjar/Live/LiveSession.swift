@@ -225,6 +225,8 @@ final class LiveSession: NSObject, ObservableObject {
         videoInit.direction = .recvOnly
         let video: RTCRtpTransceiver? = pc.addTransceiver(of: .video, init: videoInit)
 
+        restrictCodecs(audio: audio, video: video)
+
         audioTrack = audio?.receiver.track as? RTCAudioTrack
         audioTrack?.isEnabled = !muted
         videoTrack = video?.receiver.track as? RTCVideoTrack
@@ -234,6 +236,36 @@ final class LiveSession: NSObject, ObservableObject {
         let channel: RTCDataChannel? = pc.dataChannel(forLabel: serial, configuration: dcConfig)
         dc = channel
         dc?.delegate = self
+    }
+
+    /// Offer only what the camera speaks: H.264 video, G.711 audio. Google's default offer carries
+    /// VP8/VP9/AV1/H.264 variants plus RTX, RED and FEC, several times the size of the official
+    /// app's, and the camera's KVS-based stack drops oversized signaling messages.
+    private func restrictCodecs(audio: RTCRtpTransceiver?, video: RTCRtpTransceiver?) {
+        let f = Self.factory
+        let videoCaps = f.rtpReceiverCapabilities(forKind: kRTCMediaStreamTrackKindVideo).codecs
+            .filter { $0.name.uppercased() == "H264" }
+        var seen = Set<String>()
+        let h264 = videoCaps.filter { c in
+            let key = (c.parameters["profile-level-id"] ?? "") + "/" + (c.parameters["packetization-mode"] ?? "")
+            return seen.insert(key).inserted
+        }
+        let allAudio = f.rtpReceiverCapabilities(forKind: kRTCMediaStreamTrackKindAudio).codecs
+        let audioCaps = allAudio.filter { $0.name.uppercased() == "PCMU" } + allAudio.filter { $0.name.uppercased() == "PCMA" }
+        apply(Array(h264.prefix(4)), to: video, label: "video")
+        apply(audioCaps, to: audio, label: "audio")
+    }
+
+    private func apply(_ codecs: [RTCRtpCodecCapability], to tx: RTCRtpTransceiver?, label: String) {
+        guard let tx, !codecs.isEmpty else { return note("No \(label) codecs to prefer") }
+        // Called by selector: the SDK also has a deprecated overload with the same Swift name.
+        let sel = NSSelectorFromString("setCodecPreferences:error:")
+        guard tx.responds(to: sel) else { return note("Codec preferences unsupported") }
+        let ok = tx.perform(sel, with: codecs as NSArray, with: nil) != nil
+        let names = codecs.map { c in
+            c.name + (c.parameters["profile-level-id"].map { " " + $0 } ?? "")
+        }
+        note("\(label) codecs \(ok ? "" : "NOT ")set: \(names.joined(separator: ", "))")
     }
 
     private func createOffer() {
@@ -250,6 +282,7 @@ final class LiveSession: NSObject, ObservableObject {
                     Task { @MainActor in
                         guard self.generation == gen else { return }
                         if let error { return self.fail("Couldn't set the offer: \(error.localizedDescription)") }
+                        self.note("Offer \(sdp.sdp.utf8.count) bytes, \(sdp.sdp.components(separatedBy: "a=rtpmap:").count - 1) codecs")
                         self.transmit(type: "SDP_OFFER", payload: ["type": "offer", "sdp": sdp.sdp], extra: [
                             "mode": "vicoo",
                             "viewerType": "a4x_sdk",
@@ -268,7 +301,12 @@ final class LiveSession: NSObject, ObservableObject {
     private func handleAnswer(_ sdp: String) {
         guard let pc, !remoteSet else { return }
         let gen = generation
-        note("Got answer (\(sdp.contains("H264") ? "H.264" : "no H.264?"))")
+        let maps = sdp.components(separatedBy: "\n")
+            .filter { $0.hasPrefix("a=rtpmap:") }
+            .compactMap { $0.split(separator: " ").last.map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) } }
+        let fmtp = sdp.components(separatedBy: "\n").first { $0.contains("profile-level-id") }?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        note("Got answer: \(maps.joined(separator: ", ")) \(fmtp)")
         pc.setRemoteDescription(RTCSessionDescription(type: .answer, sdp: sdp)) { [weak self] error in
             Task { @MainActor in
                 guard let self, self.generation == gen else { return }
@@ -311,6 +349,13 @@ final class LiveSession: NSObject, ObservableObject {
         guard let data = try? JSONSerialization.data(withJSONObject: cmd, options: [.withoutEscapingSlashes]) else { return }
         dc.sendData(RTCDataBuffer(data: data, isBinary: false))
         note("Sent startLive")
+        let gen = generation
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(8))
+            guard let self, self.generation == gen, self.phase != .live, self.phase.isActive, let dc = self.dc else { return }
+            self.note("No video after 8s, sending startLive again")
+            dc.sendData(RTCDataBuffer(data: data, isBinary: false))
+        }
     }
 
     // MARK: - Signaling
