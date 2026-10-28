@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.3.0.11",
+          "buildVersion": "11",
+          "date": "2026-10-28T21:53:59Z",
+          "localizedDescription": "- Telegram alerts with optional AI check, set up from the bridge screen (eda98ca)\n- Live view: match vicostream's wire format, log server replies (82533d1)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-11/Nightjar-1.3.0-build-11.ipa",
+          "size": 6734380,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.2.0.10",
           "buildVersion": "10",
           "date": "2026-10-28T21:52:27Z",
@@ -110,11 +119,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.2.0.10",
-      "versionDate": "2026-10-28T21:52:27Z",
-      "versionDescription": "- Live view: match vicostream's wire format, log server replies (82533d1)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-10/Nightjar-1.2.0-build-10.ipa",
-      "size": 6703960,
+      "version": "1.3.0.11",
+      "versionDate": "2026-10-28T21:53:59Z",
+      "versionDescription": "- Telegram alerts with optional AI check, set up from the bridge screen (eda98ca)\n- Live view: match vicostream's wire format, log server replies (82533d1)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-11/Nightjar-1.3.0-build-11.ipa",
+      "size": 6734380,
       "appPermissions": {}
     }
   ],
