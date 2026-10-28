@@ -68,6 +68,8 @@ final class LiveSession: NSObject, ObservableObject {
     private var traceID = ""
     private var sessionID = ""
     private var offerSent = false
+    private var localSent = 0
+    private var offerReceiptLogged = false
     private var remoteSet = false
     private var pendingLocal: [RTCIceCandidate] = []
     private var pendingRemote: [RTCIceCandidate] = []
@@ -124,6 +126,8 @@ final class LiveSession: NSObject, ObservableObject {
         audioTrack = nil
         videoTrack = nil
         offerSent = false
+        localSent = 0
+        offerReceiptLogged = false
         remoteSet = false
         startLiveSent = false
         pendingLocal = []
@@ -158,7 +162,7 @@ final class LiveSession: NSObject, ObservableObject {
         clientID = J.str(ticket, "id") ?? ""
         groupID = J.str(ticket, "groupId") ?? ""
         traceID = J.str(ticket, "traceId") ?? ""
-        sessionID = "iOS-\(clientID)-\(Int64(Date().timeIntervalSince1970 * 1000))"
+        sessionID = "Android-\(clientID)-\(Int64(Date().timeIntervalSince1970 * 1000))"
         let accessToken = J.str(ticket, "accessToken") ?? ""
         let server = J.str(ticket, "signalServer") ?? ""
         let path = J.str(ticket, "websocketPath") ?? ""
@@ -208,7 +212,7 @@ final class LiveSession: NSObject, ObservableObject {
         config.sdpSemantics = .unifiedPlan
         config.bundlePolicy = .maxBundle
         config.rtcpMuxPolicy = .require
-        config.continualGatheringPolicy = .gatherContinually
+        config.continualGatheringPolicy = .gatherOnce
 
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
         let made: RTCPeerConnection? = Self.factory.peerConnection(with: config, constraints: constraints, delegate: self)
@@ -283,7 +287,7 @@ final class LiveSession: NSObject, ObservableObject {
                         guard self.generation == gen else { return }
                         if let error { return self.fail("Couldn't set the offer: \(error.localizedDescription)") }
                         self.note("Offer \(sdp.sdp.utf8.count) bytes, \(sdp.sdp.components(separatedBy: "a=rtpmap:").count - 1) codecs")
-                        self.transmit(type: "SDP_OFFER", payload: ["type": "offer", "sdp": sdp.sdp], extra: [
+                        self.transmit(type: "SDP_OFFER", payload: [("type", "offer"), ("sdp", sdp.sdp)], extra: [
                             "mode": "vicoo",
                             "viewerType": "a4x_sdk",
                             "resolution": "1280x720",
@@ -328,9 +332,9 @@ final class LiveSession: NSObject, ObservableObject {
         if c.sdp.contains(" 127.0.0.1 ") || c.sdp.contains(" ::1 ") { return }
         guard offerSent else { pendingLocal.append(c); return }
         transmit(type: "ICE_CANDIDATE", payload: [
-            "sdpMid": c.sdpMid ?? "0",
-            "sdpMLineIndex": Int(c.sdpMLineIndex),
-            "candidate": c.sdp,
+            ("sdpMid", c.sdpMid ?? "0"),
+            ("sdpMLineIndex", Int(c.sdpMLineIndex)),
+            ("candidate", c.sdp),
         ], extra: [:])
     }
 
@@ -360,12 +364,28 @@ final class LiveSession: NSObject, ObservableObject {
 
     // MARK: - Signaling
 
-    private func transmit(type: String, payload: JSONDict, extra: JSONDict) {
-        guard let json = try? JSONSerialization.data(withJSONObject: payload, options: [.withoutEscapingSlashes]) else { return }
+    /// Field order as vicostream's Go structs marshal them. JSON objects are unordered in theory, but the
+    /// payload is parsed by the camera's firmware, so match the known-working client byte for byte.
+    private static let fieldOrder = ["method", "code", "message", "clientType", "clientId", "status", "accessToken", "id",
+                                     "role", "name", "group", "traceId", "recipientClientId", "senderClientId", "sessionId",
+                                     "messageType", "messagePayload", "mode", "viewerType", "resolution", "version",
+                                     "timestamp", "reason"]
+
+    static func orderedJSON(_ pairs: [(String, Any)]) -> String {
+        let parts = pairs.compactMap { k, v -> String? in
+            guard let d = try? JSONSerialization.data(withJSONObject: v, options: [.fragmentsAllowed, .withoutEscapingSlashes]),
+                  let s = String(data: d, encoding: .utf8) else { return nil }
+            return "\"\(k)\":\(s)"
+        }
+        return "{" + parts.joined(separator: ",") + "}"
+    }
+
+    private func transmit(type: String, payload: [(String, Any)], extra: JSONDict) {
+        let json = Self.orderedJSON(payload)
         var msg: JSONDict = [
             "method": "TRANSMIT",
             "messageType": type,
-            "messagePayload": json.base64EncodedString(),
+            "messagePayload": Data(json.utf8).base64EncodedString(),
             "recipientClientId": serial,
             "senderClientId": clientID,
             "sessionId": sessionID,
@@ -376,15 +396,25 @@ final class LiveSession: NSObject, ObservableObject {
     }
 
     private func send(_ msg: JSONDict) {
-        guard let ws,
-              let data = try? JSONSerialization.data(withJSONObject: msg, options: [.withoutEscapingSlashes]),
-              let text = String(data: data, encoding: .utf8) else { return }
+        guard let ws else { return }
+        let pairs = Self.fieldOrder.compactMap { k in msg[k].map { (k, $0) } }
+            + msg.keys.filter { !Self.fieldOrder.contains($0) }.sorted().map { ($0, msg[$0]!) }
+        let text = Self.orderedJSON(pairs)
         let label = (msg["method"] as? String ?? "?") + ((msg["messageType"] as? String).map { " " + $0 } ?? "")
-        if label != "TRANSMIT ICE_CANDIDATE" { note("→ \(label)") }
+        if label == "TRANSMIT ICE_CANDIDATE" { localSent += 1 } else { note("→ \(label) (\(text.utf8.count) B)") }
         ws.send(.string(text)) { [weak self] error in
             guard let error else { return }
             Task { @MainActor in self?.note("send failed: \(error.localizedDescription)") }
         }
+    }
+
+    /// Server text for the log, with secrets blanked.
+    private static func redacted(_ raw: String, limit: Int = 600) -> String {
+        var t = raw
+        for key in ["credential", "accessToken", "sign", "password", "token", "username"] {
+            t = t.replacingOccurrences(of: "(\"\(key)\"\\s*:\\s*\")[^\"]*\"", with: "$1…\"", options: .regularExpression)
+        }
+        return t.count > limit ? String(t.prefix(limit)) + "…" : t
     }
 
     private func receiveLoop(_ gen: Int) {
@@ -405,7 +435,7 @@ final class LiveSession: NSObject, ObservableObject {
                     }
                     if let text, let data = text.data(using: .utf8),
                        let json = (try? JSONSerialization.jsonObject(with: data)) as? JSONDict {
-                        self.handle(json)
+                        self.handle(json, raw: text)
                     }
                     self.receiveLoop(gen)
                 }
@@ -413,7 +443,7 @@ final class LiveSession: NSObject, ObservableObject {
         }
     }
 
-    private func handle(_ msg: JSONDict) {
+    private func handle(_ msg: JSONDict, raw: String) {
         let method = J.str(msg, "method") ?? ""
         let code = (msg["code"] as? NSNumber)?.intValue
         let text = J.str(msg, "message", "msg") ?? ""
@@ -455,10 +485,16 @@ final class LiveSession: NSObject, ObservableObject {
             default:
                 note("← TRANSMIT \(type)")
             }
-        case "TRANSMIT_RESPONSE", "RESPONSE", "PONG":
+        case "PONG":
             break
+        case "TRANSMIT_RESPONSE", "RESPONSE":
+            // The server's receipt for each thing we sent. Quiet when it's fine, loud when it isn't.
+            if let code, code != 0 { note("← \(method) \(code): \(Self.redacted(raw, limit: 300))") }
+            else if !offerReceiptLogged, offerSent { offerReceiptLogged = true; note("← \(method) ok") }
+        case "WEBRTC_CONFIG":
+            note("← WEBRTC_CONFIG \(Self.redacted(raw))")
         default:
-            note("← \(method.isEmpty ? "?" : method)")
+            note("← \(Self.redacted(raw, limit: 300))")
         }
     }
 
@@ -495,7 +531,13 @@ extension LiveSession: RTCPeerConnectionDelegate {
     nonisolated func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {}
     nonisolated func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {}
     nonisolated func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {}
-    nonisolated func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {}
+    nonisolated func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {
+        guard newState == .complete else { return }
+        Task { @MainActor in
+            guard peerConnection === self.pc else { return }
+            self.note("Sent \(self.localSent) local ICE candidate(s)")
+        }
+    }
     nonisolated func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {}
 
     nonisolated func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
