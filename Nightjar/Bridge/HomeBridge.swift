@@ -24,9 +24,7 @@ struct BridgeCamConfig: Codable, Equatable {
     var alertOn = false
     var alertAll = false
     var cooldown = 60
-    var tgToken = ""
-    var tgChat = ""
-    var tgBot = ""
+    var topic = ""
     var aiKey = ""
     var aiOnly = false
     var sent = false
@@ -43,7 +41,7 @@ extension BridgeCamConfig {
         get(.ruleOn, &x.ruleOn); get(.lights, &x.lights); get(.window, &x.window)
         get(.from, &x.from); get(.to, &x.to); get(.offAfter, &x.offAfter)
         get(.alertOn, &x.alertOn); get(.alertAll, &x.alertAll); get(.cooldown, &x.cooldown)
-        get(.tgToken, &x.tgToken); get(.tgChat, &x.tgChat); get(.tgBot, &x.tgBot)
+        get(.topic, &x.topic)
         get(.aiKey, &x.aiKey); get(.aiOnly, &x.aiOnly)
         get(.sent, &x.sent); get(.sentToken, &x.sentToken)
         self = x
@@ -141,8 +139,7 @@ enum HomeBridge {
                     "enabled": c.alertOn,
                     "all": c.alertAll,
                     "cooldown": c.cooldown,
-                    "tg": c.tgToken,
-                    "chat": c.tgChat,
+                    "topic": c.topic,
                     "aiKey": c.aiKey,
                     "aiOnly": c.aiOnly,
                 ] as JSONDict,
@@ -178,43 +175,29 @@ enum HomeBridge {
     }
 }
 
-/// Telegram Bot API, used from the phone only to set alerts up (find the chat, send a test).
-enum Telegram {
-    private static func call(_ token: String, _ method: String, _ body: JSONDict = [:]) async throws -> Any? {
-        guard let u = URL(string: "https://api.telegram.org/bot\(token)/\(method)") else { throw VicoError(message: "Bad bot token.") }
+/// ntfy.sh: the bridge publishes, the ntfy iOS app (1.7+) shows the push with the snapshot.
+enum Ntfy {
+    /// Long and random: on ntfy.sh anyone who knows a topic name can read it.
+    static func newTopic() -> String {
+        let chars = Array("abcdefghijkmnpqrstuvwxyz23456789")
+        return "nightjar-" + String((0..<22).map { _ in chars.randomElement()! })
+    }
+
+    static func test(_ topic: String) async throws {
+        guard let u = URL(string: "https://ntfy.sh") else { return }
         var req = URLRequest(url: u)
         req.httpMethod = "POST"
         req.timeoutInterval = 10
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.httpBody = try JSONSerialization.data(withJSONObject: body)
-        let (data, _) = try await URLSession.shared.data(for: req)
-        let o = (try? JSONSerialization.jsonObject(with: data)) as? JSONDict ?? [:]
-        guard o["ok"] as? Bool == true else {
-            throw VicoError(message: (o["description"] as? String).map { "Telegram: \($0)" } ?? "Telegram didn't answer.")
-        }
-        return o["result"]
-    }
-
-    /// The bot's @username, which also proves the token works.
-    static func botName(_ token: String) async throws -> String {
-        let r = try await call(token, "getMe") as? JSONDict
-        guard let u = r?["username"] as? String else { throw VicoError(message: "That token didn't work.") }
-        return u
-    }
-
-    /// The chat of whoever last messaged the bot (you, after tapping Start).
-    static func latestChat(_ token: String) async throws -> String? {
-        let updates = (try await call(token, "getUpdates") as? [JSONDict]) ?? []
-        for u in updates.reversed() {
-            if let m = u["message"] as? JSONDict, let chat = m["chat"] as? JSONDict, let id = chat["id"] as? NSNumber {
-                return id.stringValue
-            }
-        }
-        return nil
-    }
-
-    static func test(_ token: String, chat: String) async throws {
-        _ = try await call(token, "sendMessage", ["chat_id": chat, "text": "Nightjar alerts are set up. The bridge will message you here."])
+        req.httpBody = try JSONSerialization.data(withJSONObject: [
+            "topic": topic,
+            "title": "Nightjar alerts are set up",
+            "message": "The bridge will push camera alerts here.",
+            "tags": ["white_check_mark"],
+            "click": "nightjar://home",
+        ] as JSONDict)
+        let (_, resp) = try await URLSession.shared.data(for: req)
+        guard (resp as? HTTPURLResponse)?.statusCode == 200 else { throw VicoError(message: "ntfy.sh didn't take the test message.") }
     }
 }
 

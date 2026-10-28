@@ -174,25 +174,21 @@ struct BridgeView: View {
 
     @ViewBuilder private var alertSections: some View {
         Section {
-            Toggle("Telegram alerts", isOn: $cfg.alertOn)
+            Toggle("Push alerts (ntfy)", isOn: $cfg.alertOn)
+                .onChange(of: cfg.alertOn) { _, on in if on && cfg.topic.isEmpty { cfg.topic = Ntfy.newTopic() } }
             if cfg.alertOn {
-                SecureField("Bot token from @BotFather", text: $cfg.tgToken)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                if !cfg.tgToken.isEmpty {
-                    if cfg.tgChat.isEmpty {
-                        if !cfg.tgBot.isEmpty, let u = URL(string: "https://t.me/\(cfg.tgBot)") {
-                            Link("1. Open @\(cfg.tgBot) and tap Start", destination: u)
-                            Button("2. Find my chat") { Task { await findChat() } }.disabled(busy)
-                        } else {
-                            Button("Check token") { Task { await checkBot() } }.disabled(busy)
-                        }
-                    } else {
-                        row("Chat", cfg.tgChat)
-                        Button("Send a test message") { Task { await testTelegram() } }.disabled(busy)
-                        Button("Use a different chat") { cfg.tgChat = "" }
+                HStack {
+                    Text(cfg.topic).font(.system(.footnote, design: .monospaced)).lineLimit(1).truncationMode(.middle)
+                    Spacer()
+                    Button { UIPasteboard.general.string = cfg.topic; message = "Topic copied. In ntfy tap +, paste it, Subscribe." } label: {
+                        Image(systemName: "doc.on.doc")
                     }
+                    .buttonStyle(.borderless)
                 }
+                if let u = URL(string: "https://apps.apple.com/app/ntfy/id1625396347") {
+                    Link("Get ntfy from the App Store", destination: u)
+                }
+                Button("Send a test push") { Task { await testPush() } }.disabled(busy)
                 Toggle("Any motion, not just people", isOn: $cfg.alertAll)
                 Stepper(value: $cfg.cooldown, in: 0...600, step: 30) {
                     Text(cfg.cooldown == 0 ? "Every event" : "At most one per \(cfg.cooldown < 60 ? "\(cfg.cooldown) s" : "\(cfg.cooldown / 60) min")")
@@ -201,7 +197,7 @@ struct BridgeView: View {
         } header: {
             Text("Alerts")
         } footer: {
-            Text("The bridge messages you the event's snapshot on Telegram, so it works with the phone asleep or away. Make a bot with @BotFather in Telegram, paste its token, then tap Start in the bot.")
+            Text("The bridge pushes each person event with its snapshot through ntfy, so it works with the phone asleep or away; tap the alert to open the event in Nightjar. In the ntfy app tap +, paste this topic and subscribe. Keep the topic private: anyone who has it can read the alerts.")
         }
 
         if cfg.alertOn {
@@ -303,34 +299,12 @@ struct BridgeView: View {
         }
     }
 
-    private func checkBot() async {
+    private func testPush() async {
         busy = true
         defer { busy = false }
         do {
-            cfg.tgBot = try await Telegram.botName(cfg.tgToken.trimmingCharacters(in: .whitespaces))
-            error = nil
-        } catch { self.error = error.localizedDescription }
-    }
-
-    private func findChat() async {
-        busy = true
-        defer { busy = false }
-        do {
-            if let chat = try await Telegram.latestChat(cfg.tgToken) {
-                cfg.tgChat = chat
-                error = nil
-            } else {
-                error = "Nothing from you yet. Open the bot, tap Start (or send it any message), then try again."
-            }
-        } catch { self.error = error.localizedDescription }
-    }
-
-    private func testTelegram() async {
-        busy = true
-        defer { busy = false }
-        do {
-            try await Telegram.test(cfg.tgToken, chat: cfg.tgChat)
-            message = "Test sent. Remember to tap Update bridge so the bridge gets the alert settings."
+            try await Ntfy.test(cfg.topic)
+            message = "Test sent. If it didn't arrive, subscribe to the topic in ntfy. Tap Update bridge to save the alert settings on the bridge."
             error = nil
         } catch { self.error = error.localizedDescription }
     }

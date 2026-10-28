@@ -14,7 +14,15 @@ struct NightjarApp: App {
                 .environmentObject(model)
                 .preferredColorScheme(.dark)
                 .tint(Theme.accent)
-                .onOpenURL { _ in Task { await model.refresh() } }
+                .onOpenURL { url in
+                    Task {
+                        // nightjar://event/<traceId> from an ntfy alert: open that event.
+                        if url.host == "event", let ev = try? await Vico.event(url.lastPathComponent).0 {
+                            NightjarQuickRoute.shared.route = .event(ev)
+                        }
+                        await model.refresh()
+                    }
+                }
         }
         .onChange(of: phase) { _, new in
             if new == .active { Task { await model.refresh() } }

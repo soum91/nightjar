@@ -30,7 +30,7 @@ Settings › Apple Home bridge pairs Nightjar with a Keystone Bridge (firmware 1
 
 ### Alerts
 
-Same screen, Alerts: the bridge sends a Telegram message with the event's snapshot when the camera sees a person (or any motion), with a cooldown. Add an Anthropic API key and Claude Haiku checks each snapshot first, flagging someone right at the lens, touching or covering the camera, or at the food; flagged alerts skip the cooldown, and "only flagged" mutes the rest. Needs bridge firmware 1.9+.
+Same screen, Alerts: the bridge pushes each person event (or any motion) through [ntfy](https://ntfy.sh) with its snapshot; the ntfy iOS app (1.7+) previews the image in the notification, and tapping it opens the event in Nightjar. Subscribe to the generated topic in ntfy; keep it private. Add an Anthropic API key and Claude Haiku checks each snapshot first, flagging someone right at the lens, touching or covering the camera, or at the food; flagged alerts go out urgent and skip the cooldown, and "only flagged" mutes the rest. Needs bridge firmware 1.9+.
 
 ## Account
 
