@@ -28,6 +28,10 @@ The live log (list button on the player, or Log after a failure) shows each step
 
 Settings › Apple Home bridge pairs Nightjar with a Keystone Bridge (firmware 1.8+) on your Wi-Fi and sends it the camera. The bridge then shows it in Apple Home as a Motion sensor, a Person sensor and a battery, polled from Vicohome's cloud every ~20 s. It can also run "person turns lights on" itself (no home hub needed): pick the lights, an optional time window, and how long until they go off again. Live video in Apple Home isn't possible on the ESP32 (HomeSpan has no camera streaming, and the board has no PSRAM).
 
+### Alerts
+
+Same screen, Alerts: the bridge sends a Telegram message with the event's snapshot when the camera sees a person (or any motion), with a cooldown. Add an Anthropic API key and Claude Haiku checks each snapshot first, flagging someone right at the lens, touching or covering the camera, or at the food; flagged alerts skip the cooldown, and "only flagged" mutes the rest. Needs bridge firmware 1.9+.
+
 ## Account
 
 Vicohome can kick an account offline when it logs in somewhere else, so signing in here with your main account may sign the Vicohome app out. Make a second Vicohome account, share your cameras to it from your main account, and use that in Nightjar. The password is kept in the Keychain for automatic re-login; the token sits in the App Group so the widget can refresh.

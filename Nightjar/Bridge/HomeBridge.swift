@@ -20,8 +20,34 @@ struct BridgeCamConfig: Codable, Equatable {
     var from = 18 * 60
     var to = 7 * 60
     var offAfter = 10
+    // Alerts (sent by the bridge)
+    var alertOn = false
+    var alertAll = false
+    var cooldown = 60
+    var tgToken = ""
+    var tgChat = ""
+    var tgBot = ""
+    var aiKey = ""
+    var aiOnly = false
     var sent = false
     var sentToken = ""
+}
+
+extension BridgeCamConfig {
+    /// Settings saved by an older build lack newer fields; keep what's there instead of resetting.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        var x = BridgeCamConfig()
+        func get<T: Decodable>(_ k: CodingKeys, _ into: inout T) { if let v = try? c.decodeIfPresent(T.self, forKey: k) { into = v } }
+        get(.serial, &x.serial); get(.name, &x.name); get(.sendPassword, &x.sendPassword)
+        get(.ruleOn, &x.ruleOn); get(.lights, &x.lights); get(.window, &x.window)
+        get(.from, &x.from); get(.to, &x.to); get(.offAfter, &x.offAfter)
+        get(.alertOn, &x.alertOn); get(.alertAll, &x.alertAll); get(.cooldown, &x.cooldown)
+        get(.tgToken, &x.tgToken); get(.tgChat, &x.tgChat); get(.tgBot, &x.tgBot)
+        get(.aiKey, &x.aiKey); get(.aiOnly, &x.aiOnly)
+        get(.sent, &x.sent); get(.sentToken, &x.sentToken)
+        self = x
+    }
 }
 
 struct BridgeLight: Identifiable, Hashable { var id: String; var name: String }
@@ -111,6 +137,15 @@ enum HomeBridge {
                     "to": c.to,
                     "offAfter": c.offAfter,
                 ] as JSONDict,
+                "alerts": [
+                    "enabled": c.alertOn,
+                    "all": c.alertAll,
+                    "cooldown": c.cooldown,
+                    "tg": c.tgToken,
+                    "chat": c.tgChat,
+                    "aiKey": c.aiKey,
+                    "aiOnly": c.aiOnly,
+                ] as JSONDict,
             ]
             if c.sendPassword, let pw = Keychain.password(for: s.email) {
                 camera["email"] = s.email
@@ -140,6 +175,46 @@ enum HomeBridge {
         let c = config
         guard link != nil, c.sent, let s = SessionStore.load(), s.token != c.sentToken else { return }
         _ = try? await send(c)
+    }
+}
+
+/// Telegram Bot API, used from the phone only to set alerts up (find the chat, send a test).
+enum Telegram {
+    private static func call(_ token: String, _ method: String, _ body: JSONDict = [:]) async throws -> Any? {
+        guard let u = URL(string: "https://api.telegram.org/bot\(token)/\(method)") else { throw VicoError(message: "Bad bot token.") }
+        var req = URLRequest(url: u)
+        req.httpMethod = "POST"
+        req.timeoutInterval = 10
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let (data, _) = try await URLSession.shared.data(for: req)
+        let o = (try? JSONSerialization.jsonObject(with: data)) as? JSONDict ?? [:]
+        guard o["ok"] as? Bool == true else {
+            throw VicoError(message: (o["description"] as? String).map { "Telegram: \($0)" } ?? "Telegram didn't answer.")
+        }
+        return o["result"]
+    }
+
+    /// The bot's @username, which also proves the token works.
+    static func botName(_ token: String) async throws -> String {
+        let r = try await call(token, "getMe") as? JSONDict
+        guard let u = r?["username"] as? String else { throw VicoError(message: "That token didn't work.") }
+        return u
+    }
+
+    /// The chat of whoever last messaged the bot (you, after tapping Start).
+    static func latestChat(_ token: String) async throws -> String? {
+        let updates = (try await call(token, "getUpdates") as? [JSONDict]) ?? []
+        for u in updates.reversed() {
+            if let m = u["message"] as? JSONDict, let chat = m["chat"] as? JSONDict, let id = chat["id"] as? NSNumber {
+                return id.stringValue
+            }
+        }
+        return nil
+    }
+
+    static func test(_ token: String, chat: String) async throws {
+        _ = try await call(token, "sendMessage", ["chat_id": chat, "text": "Nightjar alerts are set up. The bridge will message you here."])
     }
 }
 

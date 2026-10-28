@@ -150,6 +150,8 @@ struct BridgeView: View {
             Text("Runs on the bridge, so it works without a HomePod or Apple TV. Lights that were already on are left alone, and only the ones it switched on go off again. Expect 10 to 30 seconds of lag: the bridge reads the camera's events from Vicohome's cloud.")
         }
 
+        alertSections
+
         Section {
             Button {
                 Task { await send() }
@@ -170,11 +172,65 @@ struct BridgeView: View {
         }
     }
 
+    @ViewBuilder private var alertSections: some View {
+        Section {
+            Toggle("Telegram alerts", isOn: $cfg.alertOn)
+            if cfg.alertOn {
+                SecureField("Bot token from @BotFather", text: $cfg.tgToken)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                if !cfg.tgToken.isEmpty {
+                    if cfg.tgChat.isEmpty {
+                        if !cfg.tgBot.isEmpty, let u = URL(string: "https://t.me/\(cfg.tgBot)") {
+                            Link("1. Open @\(cfg.tgBot) and tap Start", destination: u)
+                            Button("2. Find my chat") { Task { await findChat() } }.disabled(busy)
+                        } else {
+                            Button("Check token") { Task { await checkBot() } }.disabled(busy)
+                        }
+                    } else {
+                        row("Chat", cfg.tgChat)
+                        Button("Send a test message") { Task { await testTelegram() } }.disabled(busy)
+                        Button("Use a different chat") { cfg.tgChat = "" }
+                    }
+                }
+                Toggle("Any motion, not just people", isOn: $cfg.alertAll)
+                Stepper(value: $cfg.cooldown, in: 0...600, step: 30) {
+                    Text(cfg.cooldown == 0 ? "Every event" : "At most one per \(cfg.cooldown < 60 ? "\(cfg.cooldown) s" : "\(cfg.cooldown / 60) min")")
+                }
+            }
+        } header: {
+            Text("Alerts")
+        } footer: {
+            Text("The bridge messages you the event's snapshot on Telegram, so it works with the phone asleep or away. Make a bot with @BotFather in Telegram, paste its token, then tap Start in the bot.")
+        }
+
+        if cfg.alertOn {
+            Section {
+                SecureField("Anthropic API key (optional)", text: $cfg.aiKey)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                if !cfg.aiKey.isEmpty {
+                    Toggle("Only alert when something's flagged", isOn: $cfg.aiOnly)
+                }
+                if let a = camera?["alerts"] as? JSONDict, let last = J.str(a, "lastAi") {
+                    row("Last check", last)
+                }
+            } header: {
+                Text("AI check")
+            } footer: {
+                Text("Claude Haiku looks at each snapshot and flags someone right at the lens, touching or covering the camera, or at the food or fridge. Flagged alerts skip the cooldown. The snapshot link goes to Anthropic; roughly a fraction of a cent per check.")
+            }
+        }
+    }
+
     @ViewBuilder private var statusRows: some View {
         if let c = camera, (c["configured"] as? Bool) == true {
             let ok = (c["ok"] as? Bool) == true
             row("Camera on bridge", ok ? "Working" : (J.str(c, "error") ?? "Starting"))
             if let b = J.num(c, "battery") { row("Battery", "\(Int(b))%") }
+            if let a = c["alerts"] as? JSONDict, (a["enabled"] as? Bool) == true {
+                row("Alerts sent", J.str(a, "error").map { "⚠︎ \($0)" } ?? "\(Int(J.num(a, "sent") ?? 0))")
+            }
             if let ago = J.num(c, "lastEventAgo") {
                 let s = Int(ago)
                 row("Last \(J.str(c, "lastType") ?? "event")", s < 60 ? "\(s)s ago" : s < 3600 ? "\(s / 60)m ago" : "\(s / 3600)h ago")
@@ -245,6 +301,38 @@ struct BridgeView: View {
         } catch {
             self.error = error.localizedDescription
         }
+    }
+
+    private func checkBot() async {
+        busy = true
+        defer { busy = false }
+        do {
+            cfg.tgBot = try await Telegram.botName(cfg.tgToken.trimmingCharacters(in: .whitespaces))
+            error = nil
+        } catch { self.error = error.localizedDescription }
+    }
+
+    private func findChat() async {
+        busy = true
+        defer { busy = false }
+        do {
+            if let chat = try await Telegram.latestChat(cfg.tgToken) {
+                cfg.tgChat = chat
+                error = nil
+            } else {
+                error = "Nothing from you yet. Open the bot, tap Start (or send it any message), then try again."
+            }
+        } catch { self.error = error.localizedDescription }
+    }
+
+    private func testTelegram() async {
+        busy = true
+        defer { busy = false }
+        do {
+            try await Telegram.test(cfg.tgToken, chat: cfg.tgChat)
+            message = "Test sent. Remember to tap Update bridge so the bridge gets the alert settings."
+            error = nil
+        } catch { self.error = error.localizedDescription }
     }
 
     private func remove() async {
