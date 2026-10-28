@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.2.0.10",
+          "buildVersion": "10",
+          "date": "2026-10-28T21:52:27Z",
+          "localizedDescription": "- Live view: match vicostream's wire format, log server replies (82533d1)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-10/Nightjar-1.2.0-build-10.ipa",
+          "size": 6703960,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.2.0.9",
           "buildVersion": "9",
           "date": "2026-10-28T20:28:19Z",
@@ -101,11 +110,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.2.0.9",
-      "versionDate": "2026-10-28T20:28:19Z",
-      "versionDescription": "- Apple Home bridge: send the camera to Keystone Bridge (fa5b641)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-9/Nightjar-1.2.0-build-9.ipa",
-      "size": 6698646,
+      "version": "1.2.0.10",
+      "versionDate": "2026-10-28T21:52:27Z",
+      "versionDescription": "- Live view: match vicostream's wire format, log server replies (82533d1)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-10/Nightjar-1.2.0-build-10.ipa",
+      "size": 6703960,
       "appPermissions": {}
     }
   ],
