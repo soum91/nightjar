@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.1.0.7",
+          "buildVersion": "7",
+          "date": "2026-10-28T20:01:45Z",
+          "localizedDescription": "- Live view over WebRTC (e31c4eb)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-7/Nightjar-1.1.0-build-7.ipa",
+          "size": 6594205,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.0.0.6",
           "buildVersion": "6",
           "date": "2026-10-27T04:44:15Z",
@@ -74,11 +83,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.0.0.6",
-      "versionDate": "2026-10-27T04:44:15Z",
-      "versionDescription": "- Expose camera Shortcut for Control Center (598ad2b)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-6/Nightjar-1.0.0-build-6.ipa",
-      "size": 709398,
+      "version": "1.1.0.7",
+      "versionDate": "2026-10-28T20:01:45Z",
+      "versionDescription": "- Live view over WebRTC (e31c4eb)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-7/Nightjar-1.1.0-build-7.ipa",
+      "size": 6594205,
       "appPermissions": {}
     }
   ],
