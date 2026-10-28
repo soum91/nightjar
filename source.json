@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.2.0.9",
+          "buildVersion": "9",
+          "date": "2026-10-28T20:28:19Z",
+          "localizedDescription": "- Apple Home bridge: send the camera to Keystone Bridge (fa5b641)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-9/Nightjar-1.2.0-build-9.ipa",
+          "size": 6698646,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.1.0.8",
           "buildVersion": "8",
           "date": "2026-10-28T20:20:59Z",
@@ -92,11 +101,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.1.0.8",
-      "versionDate": "2026-10-28T20:20:59Z",
-      "versionDescription": "- Live view: offer only H.264 + G.711, log offer/answer, retry startLive (f9db979)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-8/Nightjar-1.1.0-build-8.ipa",
-      "size": 6599951,
+      "version": "1.2.0.9",
+      "versionDate": "2026-10-28T20:28:19Z",
+      "versionDescription": "- Apple Home bridge: send the camera to Keystone Bridge (fa5b641)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-9/Nightjar-1.2.0-build-9.ipa",
+      "size": 6698646,
       "appPermissions": {}
     }
   ],
