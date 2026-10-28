@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.1.0.8",
+          "buildVersion": "8",
+          "date": "2026-10-28T20:20:59Z",
+          "localizedDescription": "- Live view: offer only H.264 + G.711, log offer/answer, retry startLive (f9db979)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-8/Nightjar-1.1.0-build-8.ipa",
+          "size": 6599951,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.1.0.7",
           "buildVersion": "7",
           "date": "2026-10-28T20:01:45Z",
@@ -83,11 +92,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.1.0.7",
-      "versionDate": "2026-10-28T20:01:45Z",
-      "versionDescription": "- Live view over WebRTC (e31c4eb)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-7/Nightjar-1.1.0-build-7.ipa",
-      "size": 6594205,
+      "version": "1.1.0.8",
+      "versionDate": "2026-10-28T20:20:59Z",
+      "versionDescription": "- Live view: offer only H.264 + G.711, log offer/answer, retry startLive (f9db979)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-8/Nightjar-1.1.0-build-8.ipa",
+      "size": 6599951,
       "appPermissions": {}
     }
   ],
