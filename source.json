@@ -20,6 +20,15 @@
       "screenshotURLs": [],
       "versions": [
         {
+          "version": "1.3.0.12",
+          "buildVersion": "12",
+          "date": "2026-10-28T22:00:02Z",
+          "localizedDescription": "- Alerts over ntfy instead of Telegram; alert taps open the event (b7c4b10)",
+          "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-12/Nightjar-1.3.0-build-12.ipa",
+          "size": 6729101,
+          "minOSVersion": "18.0"
+        },
+        {
           "version": "1.3.0.11",
           "buildVersion": "11",
           "date": "2026-10-28T21:53:59Z",
@@ -119,11 +128,11 @@
           "minOSVersion": "18.0"
         }
       ],
-      "version": "1.3.0.11",
-      "versionDate": "2026-10-28T21:53:59Z",
-      "versionDescription": "- Telegram alerts with optional AI check, set up from the bridge screen (eda98ca)\n- Live view: match vicostream's wire format, log server replies (82533d1)",
-      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-11/Nightjar-1.3.0-build-11.ipa",
-      "size": 6734380,
+      "version": "1.3.0.12",
+      "versionDate": "2026-10-28T22:00:02Z",
+      "versionDescription": "- Alerts over ntfy instead of Telegram; alert taps open the event (b7c4b10)",
+      "downloadURL": "https://github.com/soum91/nightjar/releases/download/build-12/Nightjar-1.3.0-build-12.ipa",
+      "size": 6729101,
       "appPermissions": {}
     }
   ],
