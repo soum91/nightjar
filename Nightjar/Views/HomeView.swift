@@ -2,6 +2,7 @@ import SwiftUI
 
 enum Route: Hashable {
     case camera(String)
+    case live(String)
     case event(CamEvent)
     case settings
     case raw(title: String, serial: String?, traceId: String?)
@@ -53,6 +54,7 @@ struct HomeView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .camera(let id): CameraView(serial: id)
+                case .live(let id): CameraView(serial: id, autoStart: true)
                 case .event(let e): EventView(event: e)
                 case .settings: SettingsView()
                 case .raw(let title, let serial, let trace): RawView(title: title, serial: serial, traceId: trace)

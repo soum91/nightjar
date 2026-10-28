@@ -121,6 +121,65 @@ enum Vico {
         try await call(path, body)
     }
 
+    // MARK: Live view
+
+    /// WebRTC ticket for one live session: signaling server + path, access token, group/trace ids and
+    /// TURN servers (protocol from bbielsa/vicostream). The official app calls this on the vicoo.tech host
+    /// with a Bearer token; the vicohome.io host and a bare token are tried too.
+    static func webrtcTicket(serial: String) async throws -> JSONDict {
+        func attempt() async throws -> JSONDict {
+            guard let session = SessionStore.load() else { throw VicoError(message: "Not signed in.", isAuth: true) }
+            let requestId = (0..<32).map { _ in String("0123456789abcdef".randomElement()!) }.joined()
+            let body: JSONDict = [
+                "serialNumber": serial,
+                "countryNo": session.country,
+                "requestId": requestId,
+                "language": "en",
+                "supportUnlimitedWebsocket": true,
+                "list": [Any](),
+                "app": [
+                    "versionName": "3.50.0(2f68e2)",
+                    "bundle": "addx.ai.vicoo",
+                    "timeZone": TimeZone.current.identifier,
+                    "appName": "VicoHome",
+                    "tenantId": "vicoo",
+                    "env": "prod-k8s",
+                    "version": 14148,
+                    "appType": "iOS",
+                ] as JSONDict,
+            ]
+            let vicoo = session.base.replacingOccurrences(of: "vicohome.io", with: "vicoo.tech")
+            let bearer = session.token.hasPrefix("Bearer ") ? session.token : "Bearer " + session.token
+            var tries: [(String, String)] = [(vicoo, bearer)]
+            if vicoo != session.base { tries.append((session.base, bearer)) }
+            tries.append((session.base, session.token))
+
+            var lastError: Error = VicoError(message: "No live ticket.")
+            var sawAuth = false
+            for (base, auth) in tries {
+                do {
+                    let json = try await send(base: base, path: "/device/getWebrtcTicket", token: auth, body: body)
+                    if let data = json["data"] as? JSONDict, data["signalServer"] != nil { return data }
+                    lastError = VicoError(message: "Vicohome returned a ticket without a signaling server.")
+                } catch let e as VicoError {
+                    if e.isAuth { sawAuth = true }
+                    lastError = e
+                } catch {
+                    lastError = error
+                }
+            }
+            if sawAuth { throw VicoError(message: (lastError as? VicoError)?.message ?? "Session expired.", isAuth: true) }
+            throw lastError
+        }
+
+        do {
+            return try await attempt()
+        } catch let e as VicoError where e.isAuth {
+            _ = try await call("/device/listuserdevices", [:]) // forces a re-login through the stored password
+            return try await attempt()
+        }
+    }
+
     // MARK: Plumbing
 
     /// Signed-in call with one automatic re-login when the token is rejected.

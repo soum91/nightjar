@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var model: AppModel
     @State private var confirmSignOut = false
+    @AppStorage("live.autoStart") private var autoLive = true
 
     private var version: String {
         let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
@@ -35,11 +36,11 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Text("Vicohome live view is WebRTC with its own signaling. Once the handshake is captured from the Vicohome app, live view gets added here. Everything else (cameras, events, clips) uses the cloud API and works now.")
-                        .font(.footnote)
-                        .foregroundStyle(Theme.dim)
+                    Toggle("Start live view when opening a camera", isOn: $autoLive)
                 } header: {
                     Text("Live view")
+                } footer: {
+                    Text("Live view is WebRTC straight from the camera (through Vicohome's relay when it can't connect directly). Each session wakes the camera, so battery cameras drain faster with this on.")
                 }
 
                 Section("About") {

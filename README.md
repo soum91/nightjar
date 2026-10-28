@@ -13,7 +13,16 @@ A clean iOS client for Vicohome cameras. No ads, no upsell screens, just your ca
 
 ## Live view
 
-Not in this build. Vicohome streams live video over WebRTC with its own signaling server, and the API hands out a signaling URL and TURN credentials per session. What's missing is the signaling message format, which needs a one time capture of the Vicohome app's traffic. The camera page shows whether your camera uses WebRTC (`streamProtocol`).
+Tap Go live on a camera (or turn on auto start in Settings, or use the "Go Live" Shortcut / Control Center action). Video is H.264 over WebRTC, straight from the camera when it can reach your phone, otherwise through Vicohome's TURN relay (a RELAY badge shows when that happens). Audio starts muted.
+
+How it works (protocol from [bbielsa/vicostream](https://github.com/bbielsa/vicostream)):
+
+1. `POST /device/getWebrtcTicket` (Bearer token) returns the signaling server and path, a session access token, group and trace ids, and TURN servers.
+2. WebSocket to the signaling server: `AUTH` → `AUTH_RESPONSE` (code 0) → `JOIN_LIVE` → `PEER_IN` once the camera wakes.
+3. SDP offer/answer and ICE candidates go through `TRANSMIT` messages (`SDP_OFFER`, `SDP_ANSWER`, `ICE_CANDIDATE`) with base64 JSON payloads.
+4. When the data channel opens, `{"action":"startLive", ...}` starts the stream.
+
+The live log (list button on the player, or Log after a failure) shows each step for debugging.
 
 ## Account
 

@@ -73,6 +73,10 @@ jobs:
           # Sideloaders (FlareStore etc.) only compare the version string, so make it <version>.<build>.
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION.$BUILD" Payload/Nightjar.app/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION.$BUILD" Payload/Nightjar.app/PlugIns/NightjarWidget.appex/Info.plist
+          # Embedded frameworks (WebRTC) first, then the widget, then the app.
+          for fw in Payload/Nightjar.app/Frameworks/*.framework; do
+            [ -e "$fw" ] && codesign --force --sign - --timestamp=none "$fw"
+          done
           # Ad-hoc sign with the App Group entitlement so AltStore/Sideloadly keep it for the widget.
           codesign --force --sign - --timestamp=none --entitlements NightjarWidget/NightjarWidget.entitlements Payload/Nightjar.app/PlugIns/NightjarWidget.appex
           codesign --force --sign - --timestamp=none --entitlements Nightjar/Nightjar.entitlements Payload/Nightjar.app

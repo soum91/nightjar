@@ -43,5 +43,9 @@ struct NightjarShortcuts: AppShortcutsProvider {
         AppShortcut(intent: OpenCameraIntent(), phrases: [
             "Open my camera in \(.applicationName)",
         ], shortTitle: "Open Camera", systemImageName: "video.fill")
+        AppShortcut(intent: OpenCameraIntent(nil, .live), phrases: [
+            "Show my camera live in \(.applicationName)",
+            "Go live in \(.applicationName)",
+        ], shortTitle: "Go Live", systemImageName: "dot.radiowaves.left.and.right")
     }
 }

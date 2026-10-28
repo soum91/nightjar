@@ -2,15 +2,26 @@ import SwiftUI
 
 struct CameraView: View {
     @EnvironmentObject var model: AppModel
+    @Environment(\.scenePhase) private var scenePhase
     let serial: String
+    var autoStart: Bool? = nil
     @State private var filter = "All"
     @State private var detail: JSONDict?
+    @StateObject private var live: LiveSession
+    @State private var fullscreen = false
+    @AppStorage("live.autoStart") private var autoLive = true
+
+    init(serial: String, autoStart: Bool? = nil) {
+        self.serial = serial
+        self.autoStart = autoStart
+        _live = StateObject(wrappedValue: LiveSession(serial: serial))
+    }
 
     private var camera: Camera? { model.camera(serial) }
     private var events: [CamEvent] { model.events(for: serial) }
 
     /// selectsingledevice is richer than the list; prefer it when it's loaded.
-    private var live: Camera? {
+    private var merged: Camera? {
         guard let detail, var c = Camera.from(detail) else { return camera }
         if let base = camera {
             c.name = base.name
@@ -26,12 +37,22 @@ struct CameraView: View {
             Theme.background()
             ScrollView {
                 VStack(spacing: 18) {
-                    if let cam = live {
-                        CameraCard(camera: cam, last: events.first)
-                        LiveViewCard(camera: cam)
-                        StatusGrid(camera: cam)
+                    LivePlayer(session: live, poster: events.first, onFullscreen: { fullscreen = true })
+                    if let cam = merged {
+                        HStack(spacing: 10) {
+                            Circle()
+                                .fill(cam.online == false ? Theme.danger : Theme.good)
+                                .frame(width: 8, height: 8)
+                            Text(cam.name).font(.headline)
+                            Spacer()
+                            StatusPills(camera: cam)
+                        }
+                        .card(padding: 14)
                     }
                     EventTimeline(events: events, filter: $filter, showCamera: false)
+                    if let cam = merged {
+                        StatusGrid(camera: cam)
+                    }
 
                     NavigationLink(value: Route.raw(title: "Camera data", serial: serial, traceId: nil)) {
                         Label("Diagnostics: raw camera data", systemImage: "curlybraces")
@@ -50,34 +71,16 @@ struct CameraView: View {
         }
         .navigationTitle(camera?.name ?? "Camera")
         .navigationBarTitleDisplayMode(.inline)
-        .task { detail = try? await Vico.cameraRaw(serial) }
-    }
-}
-
-struct LiveViewCard: View {
-    let camera: Camera
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "dot.radiowaves.left.and.right")
-                .font(.title3)
-                .foregroundStyle(Theme.accent)
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Live view").font(.subheadline.weight(.semibold))
-                Text(liveText).font(.footnote).foregroundStyle(Theme.dim)
-            }
-            Spacer(minLength: 0)
+        .task {
+            if autoStart ?? autoLive, live.phase == .idle { live.start() }
+            detail = try? await Vico.cameraRaw(serial)
         }
-        .card(padding: 14)
-    }
-
-    private var liveText: String {
-        switch camera.streamProtocol?.lowercased() {
-        case "webrtc"?:
-            return "This camera streams over WebRTC, so live view can be added. It's waiting on a one time capture of the Vicohome app's signaling handshake."
-        case let p?:
-            return "This camera reports stream protocol \"\(p)\". Live view needs that protocol worked out first."
-        case nil:
-            return "Live view isn't in this build yet. Clips from motion events play below."
+        .fullScreenCover(isPresented: $fullscreen) {
+            FullscreenLive(session: live, poster: events.first)
+        }
+        .onDisappear { if !fullscreen { live.stop(silently: true) } }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background, live.phase.isActive { live.stop() }
         }
     }
 }
